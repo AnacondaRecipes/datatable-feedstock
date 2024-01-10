@@ -1,5 +1,5 @@
 {% set name = "datatable" %}
-{% set version = "0.11.1" %}
+{% set version = "1.1.0" %}
 
 
 package:
@@ -8,11 +8,16 @@ package:
 
 source:
   url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/datatable-{{ version }}.tar.gz
-  sha256: 3c3a7d3bee3c463a36fe77c5d4747278a741c23fc6c6e2dba110deec200502ba
+  sha256: 8a9f6953ef6b02ede3d7c490f17d5c18c9b1bf2d58dd5451a8cac40ed887d775
 
 build:
   number: 0
-  skip: true  # [py<35 or win]
+  # Not compatible with linux-s390x and the python build system fails on Windows:
+  #   File "C:\b\abs_34334ddqln\croot\datatable_1704920393290\work\ci\ext.py", line 247, in build_extension
+  #     ext.compiler.add_include_dir(ext.compiler.path + "\\include")
+  # AttributeError: 'Compiler' object has no attribute 'path'
+  skip: true  # [py<36 or s390x or win]
+  script: {{ PYTHON }} -m pip install . -v --no-deps --no-build-isolation -C reuse_version=1
 
 # numpy and pandas are _optional_ dependencies of dataframe
 requirements:
@@ -35,8 +40,10 @@ test:
     - tests_random
     - LICENSE
   commands:
+    - pip check
     - rm tests/test-docs.py
-    - pytest tests -k 'not test_fread_from_cmd2 and not test_dt_version'
+    # Skipping test_random_attack because it requires files that are not part of sdist (tests_random/methods)
+    - pytest -vv tests -k 'not test_fread_from_cmd2 and not test_random_attack and not test_dt_version'
   requires:
     - pip
     - numpy
@@ -48,9 +55,21 @@ test:
 
 about:
   home: https://github.com/h2oai/datatable
-  summary: Python library for fast multi-threaded data manipulation and munging.
+  summary: A Python package for manipulating 2-dimensional tabular data structures.
+  description: |-
+    This is a Python package for manipulating 2-dimensional tabular data
+    structures (aka data frames). It is close in spirit to pandas or SFrame;
+    however we put specific emphasis on speed and big data support. As the name
+    suggests, the package is closely related to R's data.table and attempts
+    to mimic its core algorithms and API.
   license: MPL-2.0
+  license_family: OTHER
   license_file: LICENSE
+  dev_url: https://github.com/h2oai/datatable
+  doc_url: https://datatable.readthedocs.io
 
 extra:
+  skip-lints:
+    - missing_wheel
   recipe-maintainers:
+    - JeanChristopheMorinPerso
