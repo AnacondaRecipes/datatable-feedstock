@@ -1,0 +1,37 @@
+From a152ff22c2c302f3a3cd65821aa17d9238adf6da Mon Sep 17 00:00:00 2001
+From: Jean-Christophe Morin <jcmorin@anaconda.com>
+Date: Fri, 12 Jan 2024 13:27:10 -0500
+Subject: [PATCH] Don't override _build_info
+
+---
+ ci/ext.py | 7 -------
+ 1 file changed, 7 deletions(-)
+
+diff --git a/ci/ext.py b/ci/ext.py
+index 75ba5168..7300f97c 100644
+--- a/ci/ext.py
++++ b/ci/ext.py
+@@ -583,11 +583,6 @@ def build_wheel(wheel_directory, config_settings=None, metadata_directory=None):
+     if is_source_distribution() and reuse_version is None:
+         config_settings["reuse_version"] = True
+ 
+-    if not reuse_version:
+-        flavor = "custom" if reuse_extension else \
+-                 "debug" if debug_wheel else \
+-                 "build"
+-        generate_build_info(flavor, strict=not is_source_distribution())
+     assert os.path.isfile("src/datatable/_build_info.py")
+ 
+     if reuse_extension:
+@@ -626,8 +621,6 @@ def build_sdist(sdist_directory, config_settings=None):
+     assert isinstance(sdist_directory, str)
+     assert config_settings is None or isinstance(config_settings, dict)
+ 
+-    generate_build_info("sdist", strict=True)
+-
+     files = [f for f in glob.glob("src/datatable/**/*.py", recursive=True)
+              if "_datatable_builder.py" not in f]
+     files += glob.glob("src/core/**/*.cc", recursive=True)
+-- 
+2.43.0
+
