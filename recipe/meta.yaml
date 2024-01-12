@@ -9,6 +9,8 @@ package:
 source:
   url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/datatable-{{ version }}.tar.gz
   sha256: 8a9f6953ef6b02ede3d7c490f17d5c18c9b1bf2d58dd5451a8cac40ed887d775
+  patches:
+    - patches/0001-Don-t-override-_build_info.patch
 
 build:
   number: 0
@@ -23,6 +25,8 @@ build:
 requirements:
   build:
     - {{ compiler('cxx') }}
+    - patch  # [not win]
+    - m2-patch  # [win]
   host:
     - pip
     - python
@@ -42,8 +46,8 @@ test:
   commands:
     - pip check
     - rm tests/test-docs.py
-    # Skipping test_random_attack because it requires files that are not part of sdist (tests_random/methods)
-    - pytest -vv tests -k 'not test_fread_from_cmd2 and not test_random_attack and not test_dt_version'
+    # Skipping test_random_attack and test_fread_from_cmd2 because it requires files that are not part of sdist (tests_random/methods)
+    - pytest -vv tests -k 'not test_fread_from_cmd2 and not test_random_attack'
   requires:
     - pip
     - numpy
